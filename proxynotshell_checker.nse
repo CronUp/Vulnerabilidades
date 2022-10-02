@@ -27,7 +27,7 @@ local function CheckVuln(host,port)
     options["header"]["User-Agent"] = 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:105.0) Gecko/20100101 Firefox/105.0'
     response = http.get(host,port,payload,options)
     if (response.header['x-feserver'] ~= nil) then 
-        return "*** Potentially Vulnerable to ProxyNotShell ***"
+        return "[ALERT] Server potentially vulnerable to ProxyNotShell."
     else 
         return "Not Vulnerable."
     end
