@@ -36,8 +36,9 @@ end
 action = function(host, port)
     local options = {header={}}
     options["header"]["User-Agent"] = 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:105.0) Gecko/20100101 Firefox/105.0'
-    response = http.get(host,port,"/owa/",options)
-    if (response.status == 200) then
+    local resp = http.get(host,port,"/owa/",options)
+    local response = stdnse.output_table()
+    if (resp.status == 200) then
         response["Microsoft Exchange"] = CheckVuln(host,port)
     else 
         return "Apparently it is not a valid Microsoft Exchange server."
