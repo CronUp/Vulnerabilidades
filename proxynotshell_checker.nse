@@ -16,7 +16,7 @@ https://doublepulsar.com/proxynotshell-the-story-of-the-claimed-zero-day-in-micr
 -- @usage
 -- nmap --script proxynotshell_checker.nse -p443 <host> 
 
-author = "Germán Fernández (@1ZRR4H)"
+author = "Germán Fernández (1ZRR4H)"
 license = "GPLv3"
 categories = {"default", "discovery", "safe"}
 portrule = shortport.http
@@ -24,24 +24,29 @@ portrule = shortport.http
 local function CheckVuln(host,port)
     payload = "/autodiscover/autodiscover.json?a@foo.var/owa/&Email=autodiscover/autodiscover.json?a@foo.var&Protocol=XYZ&FooProtocol=Powershell"
     local options = {header={}}
+    options["redirect_ok"] = false
     options["header"]["User-Agent"] = 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:105.0) Gecko/20100101 Firefox/105.0'
     response = http.get(host,port,payload,options)
-    if (response.header['x-feserver'] ~= nil) then 
-        return "[ALERT] Server potentially vulnerable to ProxyNotShell."
+
+    if (response.status == 302) and (response.header['x-feserver'] ~= nil) then 
+        return "Vulnerable to ProxyShell and potentially to ProxyNotShell (mitigation not applied)."
+    elseif (response.status ~= 302) and (response.header['x-feserver'] ~= nil) then 
+        return "Potentially vulnerable to ProxyNotShell (mitigation not applied)."
+    elseif (response.status == 401) then 
+        return "Not Vulnerable (resource requires basic authentication)."
+    elseif (response.status == 404) then 
+        return "Not Vulnerable (affected resource not found)."
+    elseif (response.status == 403) then 
+        return "Not Vulnerable (access to resource is blocked)."
+    elseif (response.status == 500) then 
+        return "Not Vulnerable (internal server error)."
     else 
-        return "Not Vulnerable."
+        return "Not vulnerable or not a valid server."
     end
 end
 
 action = function(host, port)
-    local options = {header={}}
-    options["header"]["User-Agent"] = 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:105.0) Gecko/20100101 Firefox/105.0'
-    local resp = http.get(host,port,"/owa/",options)
     local response = stdnse.output_table()
-    if (resp.status == 200) then
-        response["Microsoft Exchange"] = CheckVuln(host,port)
-    else 
-        return "Apparently it is not a valid Microsoft Exchange server."
-    end
+    response["Microsoft Exchange"] = CheckVuln(host,port)
     return response
 end
