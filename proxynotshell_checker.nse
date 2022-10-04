@@ -30,9 +30,9 @@ local function CheckVuln(host,port)
     response = http.get(host,port,payload,options)
 
     if (response.status == 302) and (response.header['x-feserver'] ~= nil) then 
-        return "Potentially vulnerable to ProxyShell and ProxyNotShell (mitigation not applied)."
+        return "["..response.header['x-feserver'].."] Potentially vulnerable to ProxyShell and ProxyNotShell (mitigation not applied)."
     elseif (response.status ~= 302) and (response.header['x-feserver'] ~= nil) then 
-        return "Potentially vulnerable to ProxyNotShell (mitigation not applied)."
+        return "["..response.header['x-feserver'].."] Potentially vulnerable to ProxyNotShell (mitigation not applied)."
     elseif (response.status == 401) then 
         return "Not Vulnerable (resource requires basic authentication)."
     elseif (response.status == 404) then 
@@ -44,9 +44,9 @@ local function CheckVuln(host,port)
     elseif (response.status == nil) then 
         response_bypass = http.get(host,port,payload_bypass,options)
         if (response_bypass.status == 302) and (response_bypass.header['x-feserver'] ~= nil) then
-            return "Potentially vulnerable to ProxyShell and ProxyNotShell (mitigation bypassed)."
+            return "["..response_bypass.header['x-feserver'].."] Potentially vulnerable to ProxyShell and ProxyNotShell (mitigation bypassed)."
         elseif (response_bypass.status ~= 302) and (response_bypass.header['x-feserver'] ~= nil) then 
-            return "Potentially vulnerable to ProxyNotShell (mitigation bypassed)."
+            return "["..response_bypass.header['x-feserver'].."] Potentially vulnerable to ProxyNotShell (mitigation bypassed)."
         else
             return "Not vulnerable (possible mitigation applied)."
         end
