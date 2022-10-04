@@ -4,7 +4,7 @@ local stdnse = require "stdnse"
 local string = require "string"
 
 description = [[
-Check for Microsoft Exchange servers potentially vulnerable to ProxyNotShell (CVE-2022-40140 & CVE-2022-41082).
+Check for Microsoft Exchange servers potentially vulnerable to ProxyNotShell (CVE-2022-40140 & CVE-2022-41082) due to the fact that temporary mitigation is not applied.
 
 References: 
 https://www.gteltsc.vn/blog/warning-new-attack-campaign-utilized-a-new-0day-rce-vulnerability-on-microsoft-exchange-server-12715.html
