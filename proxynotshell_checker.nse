@@ -51,9 +51,8 @@ local function CheckVuln(host,port)
             return "Not vulnerable (possible mitigation applied)."
         end
     else 
-        return "Not vulnerable or not a valid server."
+        return "Server not vulnerable or inaccessible."
     end
-
 end
 
 action = function(host, port)
