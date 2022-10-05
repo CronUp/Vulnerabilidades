@@ -56,9 +56,10 @@ local function CheckVuln(host,port)
                 return "["..response_bypass.header['x-feserver'].."] Potentially vulnerable to ProxyNotShell (mitigation bypassed)."
             else
             return "Not vulnerable (possible mitigation applied)."
-        end
-    else 
-        return "Server not vulnerable or inaccessible."
+            end    
+        else 
+            return "Server not vulnerable or inaccessible."
+        end    
     end
 end
 
