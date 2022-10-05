@@ -24,6 +24,7 @@ portrule = shortport.http
 local function CheckVuln(host,port)
     payload = "/autodiscover/autodiscover.json?a@foo.var/owa/?&Email=autodiscover/autodiscover.json?a@foo.var&Protocol=XYZ&FooProtocol=Powershell"
     payload_bypass = "/autodiscover/autodiscover.json?a..foo.var/owa/?&Email=autodiscover/autodiscover.json?a..foo.var&Protocol=XYZ&FooProtocol=Powershell"
+    payload_bypass_2 = "/autodiscover/autodiscover.json?a..foo.var/owa/?&Email=autodiscover/autodiscover.json?a..foo.var&Protocol=XYZ&FooProtocol=%50owershell"
     local options = {header={}}
     options["redirect_ok"] = false
     options["header"]["User-Agent"] = 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:105.0) Gecko/20100101 Firefox/105.0'
@@ -47,11 +48,18 @@ local function CheckVuln(host,port)
             return "["..response_bypass.header['x-feserver'].."] Potentially vulnerable to ProxyShell and ProxyNotShell (mitigation bypassed)."
         elseif (response_bypass.status ~= 302) and (response_bypass.header['x-feserver'] ~= nil) then 
             return "["..response_bypass.header['x-feserver'].."] Potentially vulnerable to ProxyNotShell (mitigation bypassed)."
-        else
+        elseif (response.status == nil) then 
+            response_bypass = http.get(host,port,payload_bypass_2,options)
+            if (response_bypass.status == 302) and (response_bypass.header['x-feserver'] ~= nil) then
+                return "["..response_bypass.header['x-feserver'].."] Potentially vulnerable to ProxyShell and ProxyNotShell (mitigation bypassed)."
+            elseif (response_bypass.status ~= 302) and (response_bypass.header['x-feserver'] ~= nil) then 
+                return "["..response_bypass.header['x-feserver'].."] Potentially vulnerable to ProxyNotShell (mitigation bypassed)."
+            else
             return "Not vulnerable (possible mitigation applied)."
-        end
-    else 
-        return "Server not vulnerable or inaccessible."
+            end    
+        else 
+            return "Server not vulnerable or inaccessible."
+        end    
     end
 end
 
