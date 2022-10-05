@@ -14,7 +14,7 @@ https://doublepulsar.com/proxynotshell-the-story-of-the-claimed-zero-day-in-micr
 
 
 -- @usage
--- nmap --script proxynotshell_checker.nse -p443 <host> 
+-- nmap -p 443 -Pn --script proxynotshell_checker.nse <host> 
 
 author = "Germán Fernández (1ZRR4H)"
 license = "GPLv3"
@@ -23,8 +23,8 @@ portrule = shortport.http
 
 local function CheckVuln(host,port)
     payload = "/autodiscover/autodiscover.json?a@foo.var/owa/?&Email=autodiscover/autodiscover.json?a@foo.var&Protocol=XYZ&FooProtocol=Powershell"
-    payload_bypass = "/autodiscover/autodiscover.json?a..foo.var/owa/?&Email=autodiscover/autodiscover.json?a..foo.var&Protocol=XYZ&FooProtocol=Powershell"
-    payload_bypass_2 = "/autodiscover/autodiscover.json?a..foo.var/owa/?&Email=autodiscover/autodiscover.json?a..foo.var&Protocol=XYZ&FooProtocol=%50owershell"
+    payload_bypass1 = "/autodiscover/autodiscover.json?a..foo.var/owa/?&Email=autodiscover/autodiscover.json?a..foo.var&Protocol=XYZ&FooProtocol=Powershell"
+    payload_bypass2 = "/autodiscover/autodiscover.json?a..foo.var/owa/?&Email=autodiscover/autodiscover.json?a..foo.var&Protocol=XYZ&FooProtocol=%50owershell"
     local options = {header={}}
     options["redirect_ok"] = false
     options["header"]["User-Agent"] = 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:105.0) Gecko/20100101 Firefox/105.0'
@@ -43,23 +43,23 @@ local function CheckVuln(host,port)
     elseif (response.status == 500) then 
         return "Not Vulnerable (internal server error)."
     elseif (response.status == nil) then 
-        response_bypass = http.get(host,port,payload_bypass,options)
-        if (response_bypass.status == 302) and (response_bypass.header['x-feserver'] ~= nil) then
-            return "["..response_bypass.header['x-feserver'].."] Potentially vulnerable to ProxyShell and ProxyNotShell (mitigation bypassed)."
-        elseif (response_bypass.status ~= 302) and (response_bypass.header['x-feserver'] ~= nil) then 
-            return "["..response_bypass.header['x-feserver'].."] Potentially vulnerable to ProxyNotShell (mitigation bypassed)."
-        elseif (response.status == nil) then 
-            response_bypass = http.get(host,port,payload_bypass_2,options)
-            if (response_bypass.status == 302) and (response_bypass.header['x-feserver'] ~= nil) then
-                return "["..response_bypass.header['x-feserver'].."] Potentially vulnerable to ProxyShell and ProxyNotShell (mitigation bypassed)."
-            elseif (response_bypass.status ~= 302) and (response_bypass.header['x-feserver'] ~= nil) then 
-                return "["..response_bypass.header['x-feserver'].."] Potentially vulnerable to ProxyNotShell (mitigation bypassed)."
+        response_bypass1 = http.get(host,port,payload_bypass1,options)
+        if (response_bypass1.status == 302) and (response_bypass1.header['x-feserver'] ~= nil) then
+            return "["..response_bypass1.header['x-feserver'].."] Potentially vulnerable to ProxyShell and ProxyNotShell (mitigation bypassed [..])."
+        elseif (response_bypass1.status ~= 302) and (response_bypass1.header['x-feserver'] ~= nil) then 
+            return "["..response_bypass1.header['x-feserver'].."] Potentially vulnerable to ProxyNotShell (mitigation bypassed [..])."
+        elseif (response_bypass1.status == nil) then 
+            response_bypass2 = http.get(host,port,payload_bypass2,options)
+            if (response_bypass2.status == 302) and (response_bypass2.header['x-feserver'] ~= nil) then
+                return "["..response_bypass2.header['x-feserver'].."] Potentially vulnerable to ProxyShell and ProxyNotShell (mitigation bypassed [URL encoding])."
+            elseif (response_bypass2.status ~= 302) and (response_bypass2.header['x-feserver'] ~= nil) then 
+                return "["..response_bypass2.header['x-feserver'].."] Potentially vulnerable to ProxyNotShell (mitigation bypassed [URL encoding])."
             else
-            return "Not vulnerable (possible mitigation applied)."
+                return "Not vulnerable (possible mitigation applied)."
             end    
         else 
             return "Server not vulnerable or inaccessible."
-        end    
+        end
     end
 end
 
